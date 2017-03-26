@@ -12,7 +12,7 @@ get_sensor_val:
 	mov r8, r2 #Move value for sensor 0 into r8
 	andi r8, r8, 0x000F #Should only be 4 bits but mask the rest in case
 	mov r9, r0 #Empty initially 
-	mov r9, r8 #Register 10 stores the sensor data
+	mov r9, r8 #Register 9 stores the sensor data
 
 #Sensor 1 Data
 	addi sp, sp, -4 #Set up stack

@@ -8,6 +8,7 @@
 if(sensor 2 is on) #normal line
 #move forward
 
+
 else if(all sensors on) #At intersection 
 
 #Scenario 1: left and right paths only 
@@ -54,42 +55,7 @@ sensor 3 and sensor 2 is on) #Off track, straying to the left
 
 .global decide_direction
 
-.equ THRESHOLD, 0x0000000b #Adjustable
 .equ ADDR_JP1, 0xFF200060 #Address GPIO JP1
 movia r8, ADDR_JP1  
 
 decide_direction:
-
-addi sp, sp, -4
-stw r10, 0(sp)
-
-movi r4, 0
-call sensor_val
-mov r9, r2 #get the value for sensor 0
-
-mov r10, r0 #Empty initially 
-mov r10, r9 #Register 10 stores the sensor data
-andi r9, r9, 0x000F
- 
-addi sp, sp, -4
-stw r10, 0(sp)
- 
-movi r4, 1
-call sensor_val
-mov r9, r2 #Get the value for sensor 0
-andi r9, r9, 0x000F #Should only be one byte but mask the rest in case
-slli r9, 4 #Shift sensor 1 data into bits 4:7
-ori r10, r10, r9 #or bits to change bits 4:7 into sensor 1 data but keep sensor 0 data
-
-movi r4, 2
-call sensor_val
-mov r9, r2 #get the value for sensor 0
-
-movi r4, 3
-call sensor_val
-mov r9, r2 #get the value for sensor 0
-
-movi r4, 4
-call sensor_val
-mov r9, r2 #get the value for sensor 0
-

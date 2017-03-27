@@ -10,12 +10,10 @@ movia sp, 0x7FFFFFFF #Stack Pointer initilization
 movia  r9, 0x07F557FF #Set direction for motors to all output 
 stwio  r9, 4(r8)
 
-ldwio r16, 0(r8)
-movia r17, 0xFFFAABFF #Set all sensors on and motors off
-and r16, r16, r17
-stwio r16, 0(r8)
+movia r17, 0xFFFAABFF #Set all sensors on and turn motors off
+stwio r17, 0(r8)
 
-call get_sensor_val 
+call get_sensor_state
 
 end:
 br end

@@ -1,61 +1,160 @@
-#sensor 0 = *|||| sensor 1 = |*||| sensor 2 = ||*|| sensor 3 = |||*| sensor 4 = ||||*
+#sensor 4 = *|||| sensor 3 = |*||| sensor 2 = ||*|| sensor 1 = |||*| sensor 0 = ||||* (yellow lego piece)
 
 #Note: The reason we need a move forward one inch subroutine is because of 3 scenarios: 
 #Scenario 1) You are at an intersection but the only path you can take is a left turn, you would not record the turn you took as it is not technically an intersection. This is specifically important for implementing part 2 of the maze algorithm where you can take the shortest path and where you have to modify the intersections you took, and you cannot place turns like these in the path
 #Scenario 2) When going through the second maze using the shortest turn, when we meet intersections that has only one path, you would not read from the memory of paths to take
 #Scenario 3) Since we are using left hand rule, we need to make that we take straight turns prior to right ones, which would require moving forward to check
 
-if(sensor 2 is on) #normal line
-#move forward
+.global decide_direction
 
+decide_direction:
+	addi sp, sp, -4 #Store Return Address
+	stw ra, 0(sp)
+	
+	.equ ADDR_JP1, 0xFF200060 #Address GPIO JP1
+	movia r8, ADDR_JP1  
 
-else if(all sensors on) #At intersection 
+	call get_sensor_state
+	mov r8, r2 #Contains current sensor states
 
+	#Sensor State 2
+	movi r9, 0b00100 
+	beq r8, r9, move_forward
+	#All sensors On
+	movi r9, 0b11111
+	beq r8, r9, left_right_int
+	#Left sensors on
+	movi r9, 0b11100 
+	beq r8, r9, left_int
+	#Right sensors on
+	movi r9, 0b00111 
+	beq r8, r9, right_int
+	#No sensors on
+	movi r9, 0b00000 
+	beq r8, r9, u_turn
+	#Adjust left vals
+	movi r9, 0b01000 
+	beq r8, r9, adjust_left
+	movi r9, 0b10000
+	beq r8, r9, adjust_left
+	movi r9, 0b01100
+	beq r8, r9, adjust_left
+	movi r9, 0b11000
+	#Adjust right vals
+	movi r9, 0b00100 
+	beq r8, r9, adjust_right
+	movi r9, 0b00001
+	beq r8, r9, adjust_right
+	movi r9, 0b00110
+	beq r8, r9, adjust_right
+	movi r9, 0b00011
+	beq r8, r9, adjust_right
+
+#If none of the cases, then stop the motor
+stop_motor:
+
+	br direction_decided
+
+#Sensor 2 on only 
+move_forward: 
+	mov r4, r0 #Argument for move forward
+	call motor_function
+	br direction_decided
+
+#At intersection with left and right paths, need to check if there is a straight path 
+left_right_int: 
 #Scenario 1: left and right paths only 
 #Scenario 2: left, right, and straight paths
 #Scenario 3: Finish Line
 
-	#move forward an inch 
-	if(only sensor 2 is on)
-		#Must be at Scenario 1
-	else if (if no sensor on)
-		# must be at Scenario 2 
-	else if (all sensors on)
-		#must be done maze because the finish line will be a block of black
-	else
-	#should not come to this scenario?
+	#Call Move forward one inch function to check if there is a straight path or if its a finish line
+	call REPLACETHIS
+	mov r10, r2
+	movi r9, 0b11111 #All sensors on
+	beq r10, r9, finish_maze
+	movi r9, 0b00000 #No straight path
+	beq r10, r9, left_right_only
+	br left_right_straight
 
-else if(sensor 0, sensor 1, and sensor 2 is on)  #At intersection
+	#Left, right, and straight path intersection
+	left_right_straight:
+
+		br direction_decided	
+
+	#Left and right path intersection
+	left_right_only:
+
+		br direction_decided
+
+	#Done maze	
+	finish_maze:
+			
+		br direction_decided
+
+
+#At intersection with left path, need to check if there is a straight path
+left_int: 
 #Scenario 1: left path only
 #Scenario 2: left and straight path
+	
+	#Call Move forward one inch function to check if there is a straight path 
+	call REPLACETHIS
+	mov r10, r2
+	movi r9, 0b00000 #No straight path
+	beq r10, r9, left_only
+	br left_straight
 
-	#Call move forward one inch subroutine
+	#Left and straight path intersection
+	left_straight:
+		
+		br direction_decided
 
-else if(sensor 2, sensor 3, and sensor 4 is on) #At intersection
+	#Left path only
+	left_only:
+
+		br direction_decided
+
+#At intersection with right path, need to check if there is a straight path
+right_int:
 #Scenario 1: Right path only
 #Scenario 2: right and straight path
 
-	#Call move forward one inch subroutine
+	#Call Move forward one inch function to check if there is a straight path 
+	call REPLACETHIS
+	mov r10, r2
+	movi r9, 0b00000 #No straight path
+	beq r10, r9, right_only
+	br right_straight
 
-else if(no sensors on) #U turn
+	#Right and straight path intersection
+	right_straight:
+		
+		br direction_decided
 
-	#Call U Turn Subroutine
+	#Right path only
+	right_only:
 
-else if (sensor 1 is on OR 
-sensor 0 is on OR 
-sensor 0 and sensor 1 is on OR 
-sensor 1 and sensor 2 is on) #Off track, straying to the right
-	#Call Adjust left subroutine
+		br direction_decided
 
-else if (sensor 3 is on OR 
-sensor 4 is on OR 
-sensor 3 and sensor 4 is on OR
-sensor 3 and sensor 2 is on) #Off track, straying to the left 
-	#Call Adjust right subroutine
+#No sensors on, so it must be at a dead end
+u_turn:
 
-.global decide_direction
+	br direction_decided
 
-.equ ADDR_JP1, 0xFF200060 #Address GPIO JP1
-movia r8, ADDR_JP1  
+#Straying to the left, so adjust the robot right
+adjust_right:
 
-decide_direction:
+	br direction_decided
+
+#Straying to the right, so adjust the robot left
+adjust_left:
+
+	br direction_decided
+
+#Direction is decided and return from subroutine
+direction_decided:
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+
+ret
+

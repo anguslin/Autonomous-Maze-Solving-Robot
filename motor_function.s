@@ -22,6 +22,14 @@ motor_function:				#initiation
 	beq r4, r11, backward
 	movi r11, 3
 	beq r4, r11, right
+	
+	movi r11, 4
+	beq r4, r11, slight_left	
+	movi r11, 5
+	beq r4, r11, slight_right
+	
+	movi r11, 6
+	beq r4, r11, begin_movement #stop
 
 
 forward:
@@ -45,11 +53,37 @@ left:
 	call delay					#wait a little
 	br begin_movement
 	
+	
+slight_left:
+	movia r11, 0xfffffffA		#set motor directions forward
+	stwio r11, 0(r8)
+	movia r4, 0x50
+	call delay					#wait a little
+
+	movia r11, 0xfffffff2 		#set motor directions left
+	stwio r11, 0(r8)
+	movia r4, 0x50
+	call delay					#wait a little
+	br begin_movement
+	
 right:
 	movia r11, 0xfffffff8 		#set motor directions right
 	stwio r11, 0(r8)
 	movia r4, 0x50
 	call delay					#wait a little
+	br begin_movement
+	
+slight_right:
+	movia r11, 0xfffffffA		#set motor directions forward
+	stwio r11, 0(r8)
+	movia r4, 0x50
+	call delay					#wait a little
+
+	movia r11, 0xfffffff8 		#set motor directions right
+	stwio r11, 0(r8)
+	movia r4, 0x50
+	call delay	
+	br begin_movement
 	
 begin_movement:					#turn motors on
 	#stwio r11, 0(r8)	#call delay					#wait a little
@@ -60,5 +94,6 @@ begin_movement:					#turn motors on
 	
 	ldw ra, 0(sp)
 	addi sp, sp, 4
+	
 	
 ret

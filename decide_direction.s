@@ -22,6 +22,9 @@ decide_direction:
 	
 	.equ ADDR_JP1, 0xFF200060 #Address GPIO JP1
 	movia r8, ADDR_JP1  
+	
+	#Contains the previous values of the Motor Function parameters
+	mov r11, r4
 
 	call get_sensor_state
 	mov r8, r2 #Contains current sensor states
@@ -58,17 +61,26 @@ decide_direction:
 	beq r8, r9, adjust_right
 	movi r9, 0b00011
 	beq r8, r9, adjust_right
+	br previous_state
+
+previous_state:
+	movi r4, r11 #Get previous value 
+	call motor_function
+	movi r2, r11 
+	br direction_decided	
 
 #If none of the cases, then stop the motor
 stop_motor: #Should only use this when maze is finished, but if no sensor conditions satisfied, it could come use this 
 	movi r4, STOP #Parameter for stop motor
 	call motor_function
+	movi r2, STOP 
 	br direction_decided
 
 #Sensor 2 on only 
 move_forward: 
 	movi r4, GOSTRAIGHT
 	call motor_function
+	movi r2, GOSTRAIGHT
 	br direction_decided
 
 #At intersection with left and right paths, need to check if there is a straight path 
@@ -91,6 +103,7 @@ left_right_int:
 	#If at a left right, and straight intersection, take the left
 		movi r4, TURNLEFT 
 		call motor_function
+		movi r2, TURNLEFT
 		br direction_decided	
 
 	#Left and right path intersection
@@ -98,11 +111,15 @@ left_right_int:
 	#If at a left and right intersection, take the left
 		movi r4, TURNLEFT 
 		call motor_function
+		movi r2, TURNLEFT
 		br direction_decided
 
 	#Done maze	
 	finish_maze:
-		br stop_motor #Stop moving once the end is reached
+	movi r4, STOP #Parameter for stop motor
+	call motor_function
+	movi r2, STOP
+	br direction_decided
 
 #At intersection with left path, need to check if there is a straight path
 left_int: 
@@ -121,6 +138,7 @@ left_int:
 	#If at left and straight intersection, take the left
 		movi r4, TURNLEFT 
 		call motor_function
+		movi r2, TURNLEFT
 		br direction_decided
 
 	#Left path only
@@ -128,6 +146,7 @@ left_int:
 	#Take the left	
 		movi r4, TURNLEFT 
 		call motor_function
+		movi r2, TURNLEFT
 		br direction_decided
 
 #At intersection with right path, need to check if there is a straight path
@@ -147,6 +166,7 @@ right_int:
 	#If at right and straight intersection, go straight
 		movi r4, GOSTRAIGHT 
 		call motor_function
+		movi r2, GOSTRAIGHT
 		br direction_decided
 
 	#Right path only
@@ -154,6 +174,7 @@ right_int:
 	#If at right, go right
 		movi r4, TURNRIGHT
 		call motor_function
+		movi r2, TURNRIGHT
 		br direction_decided
 
 #No sensors on, so it must be at a dead end
@@ -161,18 +182,21 @@ u_turn:
 #Turn around
 	movi r4, TURNAROUND
 	call motor_function
+	movi r2, TURNAROUND
 	br direction_decided
 
 #Straying to the left, so adjust the robot right
 adjust_right:
 	movi r4, TURNRIGHT
 	call motor_function
+	movi r2, TURNRIGHT
 	br direction_decided
 
 #Straying to the right, so adjust the robot left
 adjust_left:
 	movi r4, TURNLEFT 
 	call motor_function
+	movi r2, TURNLEFT
 	br direction_decided
 
 #Direction is decided and return from subroutine
@@ -181,4 +205,3 @@ direction_decided:
 	addi sp, sp, 4
 
 ret
-

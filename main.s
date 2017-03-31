@@ -14,12 +14,10 @@ movia r17, 0xFFFAABFF #Set all sensors on and turn motors off
 stwio r17, 0(r8)
 
 read_sensor_and_decide_direction:
+	mov r4, r10 #Previous state of the motors
 	call decide_direction
+	mov r10, r2 #The state of the motors during the call
 	br read_sensor_and_decide_direction
 
 end:
 br end
-
-
-
-

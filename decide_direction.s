@@ -9,12 +9,14 @@
 
 #Motor Function parameters
 .equ GOSTRAIGHT, 0
-.equ TURNLEFT, 1
+.equ ADJUSTHARDLEFT, 1
 .equ TURNAROUND, 2 
-.equ TURNRIGHT, 3 
+.equ ADJUSTHARDRIGHT, 3 
 .equ ADJUSTLEFT, 4
 .equ ADJUSTRIGHT, 5
 .equ STOP, 6
+.equ TURNLEFT 7
+.equ TURNRIGHT 8
 
 decide_direction:
 	addi sp, sp, -4 #Store Return Address
@@ -64,6 +66,15 @@ decide_direction:
 	br previous_state
 
 previous_state:
+	#Check if it is turning left, right or around
+	movi r12, TURNLEFT 
+	beq r11, r12, left_only
+	movi r12, TURNRIGHT
+	beq r11, r12 right_only
+	movi r12, TURNAROUND
+	beq r11, r12 u_turn
+
+	#Otherwise call motor function
 	movi r4, r11 #Get previous value 
 	call motor_function
 	movi r2, r11 
@@ -101,17 +112,15 @@ left_right_int:
 	#Left, right, and straight path intersection
 	left_right_straight:
 	#If at a left right, and straight intersection, take the left
-		movi r4, TURNLEFT 
-		call motor_function
-		movi r2, TURNLEFT
+		call full_left_movement	
+		movi r2, TURNLEFT 
 		br direction_decided	
 
 	#Left and right path intersection
 	left_right_only:
 	#If at a left and right intersection, take the left
-		movi r4, TURNLEFT 
-		call motor_function
-		movi r2, TURNLEFT
+		call full_left_movement	
+		movi r2, TURNLEFT 
 		br direction_decided
 
 	#Done maze	
@@ -136,17 +145,15 @@ left_int:
 	#Left and straight path intersection
 	left_straight:
 	#If at left and straight intersection, take the left
-		movi r4, TURNLEFT 
-		call motor_function
-		movi r2, TURNLEFT
+		call full_left_movement	
+		movi r2, TURNLEFT 
 		br direction_decided
 
 	#Left path only
 	left_only:
 	#Take the left	
-		movi r4, TURNLEFT 
-		call motor_function
-		movi r2, TURNLEFT
+		call full_left_movement	
+		movi r2, TURNLEFT 
 		br direction_decided
 
 #At intersection with right path, need to check if there is a straight path
@@ -172,8 +179,7 @@ right_int:
 	#Right path only
 	right_only:
 	#If at right, go right
-		movi r4, TURNRIGHT
-		call motor_function
+		#call full_right_movement
 		movi r2, TURNRIGHT
 		br direction_decided
 
@@ -187,16 +193,16 @@ u_turn:
 
 #Straying to the left, so adjust the robot right
 adjust_right:
-	movi r4, TURNRIGHT
+	movi r4, ADJUSTHARDRIGHT
 	call motor_function
-	movi r2, TURNRIGHT
+	movi r2, ADJUSTHARDRIGHT
 	br direction_decided
 
 #Straying to the right, so adjust the robot left
 adjust_left:
-	movi r4, TURNLEFT 
+	movi r4, ADJUSTHARDLEFT 
 	call motor_function
-	movi r2, TURNLEFT
+	movi r2, ADJUSTHARDLEFT
 	br direction_decided
 
 #Direction is decided and return from subroutine

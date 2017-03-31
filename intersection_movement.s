@@ -30,8 +30,16 @@ forward:
 	call delay
 	
 read_sensor_data:
-	get_sensor_state
+	call get_sensor_state
 	
+
+	
+epilogue:	
+	ldw ra, 0(sp)
+	addi sp, sp, 4
+	
+ret
+
 backward_setup:
 	movia r16, TIMER2                   			# r16 contains the base address for the timer
     
@@ -50,9 +58,3 @@ backward:
 	ldwio r17, 0(r16)
     andi r17,r17, 0x1
     beq r17, r0, backward
-	
-epilogue:	
-	ldw ra, 0(sp)
-	addi sp, sp, 4
-	
-ret

@@ -8,13 +8,13 @@
 .global decide_direction
 
 #Motor Function parameters
-.equ GOSTRAIGHT 0
-.equ TURNLEFT 1
-.equ TURNAROUND 2 
-.equ TURNRIGHT 3 
-.equ ADJUSTLEFT 4
-.equ ADJUSTRIGHT 5
-.equ STOP 6
+.equ GOSTRAIGHT, 0
+.equ TURNLEFT, 1
+.equ TURNAROUND, 2 
+.equ TURNRIGHT, 3 
+.equ ADJUSTLEFT, 4
+.equ ADJUSTRIGHT, 5
+.equ STOP, 6
 
 decide_direction:
 	addi sp, sp, -4 #Store Return Address
@@ -40,7 +40,7 @@ decide_direction:
 	beq r8, r9, right_int #Need to check if can go straight
 	#No sensors on
 	movi r9, 0b00000 
-	beq r8, r9, u_turn
+	beq r8, r9, move_forward
 	#Adjust left vals
 	movi r9, 0b01000 
 	beq r8, r9, adjust_left
@@ -50,7 +50,7 @@ decide_direction:
 	beq r8, r9, adjust_left
 	movi r9, 0b11000
 	#Adjust right vals
-	movi r9, 0b00100 
+	movi r9, 0b00010 
 	beq r8, r9, adjust_right
 	movi r9, 0b00001
 	beq r8, r9, adjust_right
@@ -165,13 +165,13 @@ u_turn:
 
 #Straying to the left, so adjust the robot right
 adjust_right:
-	movi r4, ADJUSTRIGHT
+	movi r4, TURNRIGHT
 	call motor_function
 	br direction_decided
 
 #Straying to the right, so adjust the robot left
 adjust_left:
-	movi r4, ADJUSTLEFT 
+	movi r4, TURNLEFT 
 	call motor_function
 	br direction_decided
 

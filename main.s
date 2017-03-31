@@ -13,7 +13,9 @@ stwio  r9, 4(r8)
 movia r17, 0xFFFAABFF #Set all sensors on and turn motors off
 stwio r17, 0(r8)
 
-call get_sensor_state
+read_sensor_and_decide_direction:
+	call decide_direction
+	br read_sensor_and_decide_direction
 
 end:
 br end

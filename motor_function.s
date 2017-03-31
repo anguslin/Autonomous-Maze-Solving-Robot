@@ -33,14 +33,14 @@ motor_function:				#initiation
 
 
 forward:
-	movia r11, 0xfffffffA		#set motor directions forward
+	movia r11, 0xfffffff0		#set motor directions forward
 	stwio r11, 0(r8)
 	movia r4, 0x50
 	call delay					#wait a little
 	br begin_movement
 	
 backward:
-	movia r11, 0xfffffff0 		#set motor directions backward
+	movia r11, 0xfffffffa 		#set motor directions backward
 	stwio r11, 0(r8)
 	movia r4, 0x50
 	call delay					#wait a little
@@ -55,14 +55,14 @@ left:
 	
 	
 slight_left:
-	movia r11, 0xfffffffA		#set motor directions forward
+	movia r11, 0xfffffff0		#set motor directions forward
 	stwio r11, 0(r8)
-	movia r4, 0x50
+	movia r4, 0x30
 	call delay					#wait a little
 
 	movia r11, 0xfffffff2 		#set motor directions left
 	stwio r11, 0(r8)
-	movia r4, 0x50
+	movia r4, 0x20
 	call delay					#wait a little
 	br begin_movement
 	
@@ -74,20 +74,20 @@ right:
 	br begin_movement
 	
 slight_right:
-	movia r11, 0xfffffffA		#set motor directions forward
+	movia r11, 0xfffffff0		#set motor directions forward
 	stwio r11, 0(r8)
-	movia r4, 0x50
+	movia r4, 0x30
 	call delay					#wait a little
 
 	movia r11, 0xfffffff8 		#set motor directions right
 	stwio r11, 0(r8)
-	movia r4, 0x50
+	movia r4, 0x20
 	call delay	
 	br begin_movement
 	
 begin_movement:					#turn motors on
 	#stwio r11, 0(r8)	#call delay					#wait a little
-	movia r4, 0xF4
+	movia r4, 0xB0
 	movia r11, 0xffffffff		#turn motors off
 	stwio r11,0(r8)
 	call delay					#wait a little

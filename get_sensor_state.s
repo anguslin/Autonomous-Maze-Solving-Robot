@@ -1,6 +1,6 @@
 .global get_sensor_state 
 
-.equ THRESHOLD, 0x0000000b #Adjustable
+.equ THRESHOLD, 0x00000009 #Adjustable
 
 get_sensor_state:
 	addi sp, sp, -4 #Store Return Address
@@ -46,7 +46,7 @@ invert_sensors:
 	movi r15, 4 #Counter loop
 
 invert_sensor_loop:	
-	andi r12, 0b01 #Only wants first bit
+	andi r12, r12, 0b01 #Only wants first bit
 	or r14, r14, r12 #Change the least significant bit without affecting the others
 	beq r15, r0, done_conversion
 	slli r14, r14, 1 #Shift 1 bit to prepare for next sensor state val

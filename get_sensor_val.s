@@ -56,7 +56,7 @@ get_sensor_val:
 #Sensor 4 Data
 	addi sp, sp, -4 #Set up stack
 	stw r9, 0(sp) #Store r9 into stack
-	movi r4, 1 #Input argument to read sensor 1
+	movi r4, 4 #Input argument to read sensor 1
 	call sensor_val
 	ldw r9, 0(sp) #Restore r9 from stack
 	addi sp, sp, 4 #Move stack pointer down the memory

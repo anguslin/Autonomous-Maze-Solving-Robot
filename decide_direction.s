@@ -15,8 +15,8 @@
 .equ ADJUSTLEFT, 4
 .equ ADJUSTRIGHT, 5
 .equ STOP, 6
-.equ TURNLEFT 7
-.equ TURNRIGHT 8
+.equ TURNLEFT, 7
+.equ TURNRIGHT, 8
 
 decide_direction:
 	addi sp, sp, -4 #Store Return Address
@@ -31,38 +31,47 @@ decide_direction:
 	call get_sensor_state
 	mov r8, r2 #Contains current sensor states
 
+		
+	#All sensors On
+#	movi r9, 0b11111
+#	beq r8, r9, left_right_int #Need to check if can go straight
+	#Left sensors on
+#	movi r9, 0b11100 
+#	beq r8, r9, left_int #Need to check if can go straight
+	#Right sensors on
+#	movi r9, 0b00111 
+#	beq r8, r9, right_int #Need to check if can go straight
+	
+	
+	#Left or Right sensor on
+	movi r9, 0b10001
+	and r9, r9, r8
+	bne r9, r0, intersection	
+
 	#Sensor State 2
 	movi r9, 0b00100 
 	beq r8, r9, move_forward
-	#All sensors On
-	movi r9, 0b11111
-	beq r8, r9, left_right_int #Need to check if can go straight
-	#Left sensors on
-	movi r9, 0b11100 
-	beq r8, r9, left_int #Need to check if can go straight
-	#Right sensors on
-	movi r9, 0b00111 
-	beq r8, r9, right_int #Need to check if can go straight
 	#No sensors on
 	movi r9, 0b00000 
 	beq r8, r9, move_forward
 	#Adjust left vals
 	movi r9, 0b01000 
 	beq r8, r9, adjust_left
-	movi r9, 0b10000
-	beq r8, r9, adjust_left
+#	movi r9, 0b10000
+#	beq r8, r9, adjust_left
 	movi r9, 0b01100
 	beq r8, r9, adjust_left
-	movi r9, 0b11000
+#	movi r9, 0b11000
+#	beq r8, r9, adjust_left
 	#Adjust right vals
 	movi r9, 0b00010 
 	beq r8, r9, adjust_right
-	movi r9, 0b00001
-	beq r8, r9, adjust_right
+#	movi r9, 0b00001
+#	beq r8, r9, adjust_right
 	movi r9, 0b00110
 	beq r8, r9, adjust_right
-	movi r9, 0b00011
-	beq r8, r9, adjust_right
+#	movi r9, 0b00011
+#	beq r8, r9, adjust_right
 	br previous_state
 
 previous_state:
@@ -70,14 +79,14 @@ previous_state:
 	movi r12, TURNLEFT 
 	beq r11, r12, left_only
 	movi r12, TURNRIGHT
-	beq r11, r12 right_only
+	beq r11, r12, right_only
 	movi r12, TURNAROUND
-	beq r11, r12 u_turn
+	beq r11, r12, u_turn
 
 	#Otherwise call motor function
-	movi r4, r11 #Get previous value 
+	mov r4, r11 #Get previous value 
 	call motor_function
-	movi r2, r11 
+	mov r2, r11 
 	br direction_decided	
 
 #If none of the cases, then stop the motor
@@ -93,15 +102,27 @@ move_forward:
 	call motor_function
 	movi r2, GOSTRAIGHT
 	br direction_decided
-
+	
+#Left or right sensors on 	
+intersection:
+	call intersection_movement
+	mov r10, r2
+	andi r13, r10, 0b10001
+	movi r9, 0b10001
+	beq r13, r9, left_right_int
+	movi r9, 0b10000
+	beq r13, r9, left_int
+	movi r9, 0b00001
+	beq r13, r9, right_int			
+	
+	
 #At intersection with left and right paths, need to check if there is a straight path 
 left_right_int: 
 #Scenario 1: left and right paths only 
 #Scenario 2: left, right, and straight paths
 #Scenario 3: Finish Line
 
-	#Call Move forward one inch function to check if there is a straight path or if its a finish line
-	call intersection_movement
+	call get_sensor_state
 	mov r10, r2
 	movi r9, 0b11111 #All sensors on
 	beq r10, r9, finish_maze
@@ -135,8 +156,7 @@ left_int:
 #Scenario 1: left path only
 #Scenario 2: left and straight path
 	
-	#Call Move forward one inch function to check if there is a straight path 
-	call intersection_movement
+	call get_sensor_state
 	mov r10, r2
 	movi r9, 0b00000 #No straight path
 	beq r10, r9, left_only
@@ -161,8 +181,7 @@ right_int:
 #Scenario 1: Right path only
 #Scenario 2: right and straight path
 
-	#Call Move forward one inch function to check if there is a straight path 
-	call intersection_movement
+	call get_sensor_state
 	mov r10, r2
 	movi r9, 0b00000 #No straight path
 	beq r10, r9, right_only
@@ -171,15 +190,15 @@ right_int:
 	#Right and straight path intersection
 	right_straight:
 	#If at right and straight intersection, go straight
-		movi r4, GOSTRAIGHT 
-		call motor_function
-		movi r2, GOSTRAIGHT
-		br direction_decided
+	movi r4, GOSTRAIGHT 
+	call motor_function
+	movi r2, GOSTRAIGHT
+	br direction_decided
 
 	#Right path only
 	right_only:
 	#If at right, go right
-		#call full_right_movement
+		call full_right_movement
 		movi r2, TURNRIGHT
 		br direction_decided
 

@@ -47,9 +47,9 @@ backward:
 	br begin_movement
 	
 left:
-	movia r11, 0xfffffff2 		#set motor directions left
+	movia r11, 0xfffffff8 		#set motor directions left
 	stwio r11, 0(r8)
-	movia r4, 0x50
+	movia r4, 0x100
 	call delay					#wait a little
 	br begin_movement
 	
@@ -60,16 +60,16 @@ slight_left:
 	movia r4, 0x30
 	call delay					#wait a little
 
-	movia r11, 0xfffffff2 		#set motor directions left
+	movia r11, 0xfffffff8 		#set motor directions left
 	stwio r11, 0(r8)
 	movia r4, 0x20
 	call delay					#wait a little
 	br begin_movement
 	
 right:
-	movia r11, 0xfffffff8 		#set motor directions right
+	movia r11, 0xfffffff2 		#set motor directions right
 	stwio r11, 0(r8)
-	movia r4, 0x50
+	movia r4, 0x100
 	call delay					#wait a little
 	br begin_movement
 	
@@ -79,7 +79,7 @@ slight_right:
 	movia r4, 0x30
 	call delay					#wait a little
 
-	movia r11, 0xfffffff8 		#set motor directions right
+	movia r11, 0xfffffff2		#set motor directions right
 	stwio r11, 0(r8)
 	movia r4, 0x20
 	call delay	

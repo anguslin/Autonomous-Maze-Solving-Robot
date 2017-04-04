@@ -1,5 +1,3 @@
-#sensor 4 = *|||| sensor 3 = |*||| sensor 2 = ||*|| sensor 1 = |||*| sensor 0 = ||||* (yellow lego piece)
-
 #Note: The reason we need a move forward one inch subroutine is because of 3 scenarios: 
 #Scenario 1) You are at an intersection but the only path you can take is a left turn, you would not record the turn you took as it is not technically an intersection. This is specifically important for implementing part 2 of the maze algorithm where you can take the shortest path and where you have to modify the intersections you took, and you cannot place turns like these in the path
 #Scenario 2) When going through the second maze using the shortest turn, when we meet intersections that has only one path, you would not read from the memory of paths to take
@@ -9,14 +7,12 @@
 
 #Motor Function parameters
 .equ GOSTRAIGHT, 0
-.equ ADJUSTHARDLEFT, 1
-.equ TURNAROUND, 2 
-.equ ADJUSTHARDRIGHT, 3 
-.equ ADJUSTLEFT, 4
-.equ ADJUSTRIGHT, 5
-.equ STOP, 6
-.equ TURNLEFT, 7
-.equ TURNRIGHT, 8
+.equ TURNAROUND, 1 
+.equ STOP, 2
+.equ ADJUSTLEFT, 3
+.equ ADJUSTRIGHT, 4 
+.equ TURNLEFT, 5 
+.equ TURNRIGHT, 6
 
 decide_direction:
 	addi sp, sp, -4 #Store Return Address
@@ -31,23 +27,10 @@ decide_direction:
 	call get_sensor_state
 	mov r8, r2 #Contains current sensor states
 
-		
-	#All sensors On
-#	movi r9, 0b11111
-#	beq r8, r9, left_right_int #Need to check if can go straight
-	#Left sensors on
-#	movi r9, 0b11100 
-#	beq r8, r9, left_int #Need to check if can go straight
-	#Right sensors on
-#	movi r9, 0b00111 
-#	beq r8, r9, right_int #Need to check if can go straight
-	
-	
 	#Left or Right sensor on
 	movi r9, 0b10001
 	and r9, r9, r8
 	bne r9, r0, intersection	
-
 	#Sensor State 2
 	movi r9, 0b00100 
 	beq r8, r9, move_forward
@@ -57,21 +40,14 @@ decide_direction:
 	#Adjust left vals
 	movi r9, 0b01000 
 	beq r8, r9, adjust_left
-#	movi r9, 0b10000
-#	beq r8, r9, adjust_left
 	movi r9, 0b01100
 	beq r8, r9, adjust_left
-#	movi r9, 0b11000
-#	beq r8, r9, adjust_left
 	#Adjust right vals
 	movi r9, 0b00010 
 	beq r8, r9, adjust_right
-#	movi r9, 0b00001
-#	beq r8, r9, adjust_right
 	movi r9, 0b00110
 	beq r8, r9, adjust_right
-#	movi r9, 0b00011
-#	beq r8, r9, adjust_right
+	
 	br previous_state
 
 previous_state:
@@ -205,23 +181,22 @@ right_int:
 #No sensors on, so it must be at a dead end
 u_turn:
 #Turn around
-	movi r4, TURNAROUND
-	call motor_function
+	call full_u_turn_movement
 	movi r2, TURNAROUND
 	br direction_decided
 
 #Straying to the left, so adjust the robot right
 adjust_right:
-	movi r4, ADJUSTHARDRIGHT
+	movi r4, ADJUSTRIGHT
 	call motor_function
-	movi r2, ADJUSTHARDRIGHT
+	movi r2, ADJUSTRIGHT
 	br direction_decided
 
 #Straying to the right, so adjust the robot left
 adjust_left:
-	movi r4, ADJUSTHARDLEFT 
+	movi r4, ADJUSTLEFT 
 	call motor_function
-	movi r2, ADJUSTHARDLEFT
+	movi r2, ADJUSTLEFT
 	br direction_decided
 
 #Direction is decided and return from subroutine

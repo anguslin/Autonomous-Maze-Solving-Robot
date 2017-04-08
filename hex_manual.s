@@ -1,0 +1,12 @@
+.equ HEX0TO3, 0xFF200020
+.equ HEX4TO5, 0xFF200030
+
+#HEX code to write MANUAL
+movia r8, HEX0TO3
+movia r9, 0b 00110111 00111110 01110111 00111000
+stwio r9, 0(r8)
+movia r8, HEX4TO5
+movia r9, 0b 00110111 01110111 
+stwio r9, 0(r8)
+
+

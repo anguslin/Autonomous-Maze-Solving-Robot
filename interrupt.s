@@ -5,62 +5,80 @@
 .equ SEVEN_SEG_DISPLAY_4TO5, 0x10000030
 .equ PUSHBUTTONS, 0xFF200050
 
-.equ CODE_G, 0x34
-.equ CODE_L, 0x4B
-.equ CODE_F, 0x2B
-.equ CODE_R, 0x2D
-.equ CODE_U, 0x3C
-.equ CODE_S, 0x1B
+.equ CODE_UP, 0x1D
+.equ CODE_LEFT, 0x1C
+.equ CODE_RIGHT, 0x23
+.equ CODE_DOWN, 0x1B
 
 .section .exceptions, "ax"
 
 HANDLER:
 
-movia r16, PUSHBUTTONS
-ldwio r17, 0(r19)
-andi r17, r17, 0b11
-movi r18, 0b01 #Auto Mode 
-beq r17, r18, CHANGE_AUTO
-movi r18, 0b10 #Manual mode (Also Default)
-beq r17, r18, CHANGE_MANUAL
-br CHECK_AUTO
+addi sp, sp, -16
+    stw ra, 0(sp)    
+    stw r16, 4(sp)
+    stw r17, 8(sp)
+    stw r18, 12(sp)
+
+rdctl et, ctl4
+andi et, et, 0x2
+bne et, r0, pushButtonInterrupts
+
+pushButtonInterrupts:
+	
+	movia r16, PUSHBUTTONS
+	
+	ldwio r17, 12(r16)
+	andi r17, r17, 0b11
+	movi r18, 0b10 #Auto Mode 
+	beq r17, r18, CHANGE_AUTO
+	movi r18, 0b01 #Manual mode (Also Default)
+	beq r17, r18, CHANGE_MANUAL
+	br CHECK_AUTO
 
 CHANGE_AUTO:
-	movi r23, 1
+	call hex_auto
+	movi r23, 2
 	br CHECK_AUTO
 
 CHANGE_MANUAL:
-	mov r23, r0
+	call hex_manual
+	movi r23, 1
 	br CHECK_AUTO
 
 CHECK_AUTO:
-	bne r23, r0, DONE #If auto mode, then leave
+	movi r17, 0b11
+	stwio r17, 12(r16)
+	movi r16, 1
+	bne r23, r16, DONE #If auto mode, then leave
 
-	movia r16, PS2
+	movia r16, PS_2
 	ldwio r17, 0(r16) #Load PS/2 Data
 	andi r17, r17, 0xFF #Mask the other values
 
-	movia r18, CODE_F #Go Forward
+	movia r18, CODE_UP #Go Forward
 	beq r17, r18, FORWARD
-	movia r18, CODE_L #Turn Left
+	movia r18, CODE_LEFT #Turn Left
 	beq r17, r18, LEFT 
-	movia r18, CODE_R #Turn Right
+	movia r18, CODE_RIGHT #Turn Right
 	beq r17, r18, RIGHT
-	movia r18, CODE_U #Turn Around
-	beq r17, r18, U_TURN
+	movi r18, CODE_DOWN
+	beq r17, r18, BACK
 
 #If none selected, motor will stop
 STOP:
-
+	movi r4, 6 #parameter for stop
+	call motor_function
 	br DONE
 
 LEFT:
-
-	call full_left_movement	
+	movi r4, 1 #Left parameter
+	call motor_function
 	br DONE
 
 RIGHT:
-	call full_right_movement
+	movi r4, 3 #Right parameter
+	call motor_function
 	br DONE
 
 FORWARD:
@@ -68,10 +86,17 @@ FORWARD:
 	call motor_function
 	br DONE
 	
-U_TURN:
-	call full_u_turn_movement
-	br DONE
+BACK:
+	movi r4, 2
+	call motor_function
+	br DONE	
 
 DONE:
-	addi ea, ea, -44
+	ldw ra, 0(sp)
+    ldw r16, 4(sp)
+    ldw r17, 8(sp)
+    ldw r18, 12(sp)
+    addi sp, sp, 16
+
+	addi ea, ea, -4
 	eret

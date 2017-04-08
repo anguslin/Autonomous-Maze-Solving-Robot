@@ -7,12 +7,12 @@
 
 #Motor Function parameters
 .equ GOSTRAIGHT, 0
-.equ TURNAROUND, 1 
-.equ STOP, 2
-.equ ADJUSTLEFT, 3
-.equ ADJUSTRIGHT, 4 
+.equ ADJUSTLEFT, 1
+.equ TURNRIGHT, 2
+.equ ADJUSTRIGHT, 3
+.equ TURNAROUND, 4  
 .equ TURNLEFT, 5 
-.equ TURNRIGHT, 6
+.equ STOP, 6
 
 decide_direction:
 	addi sp, sp, -4 #Store Return Address
@@ -36,7 +36,7 @@ decide_direction:
 	beq r8, r9, move_forward
 	#No sensors on
 	movi r9, 0b00000 
-	beq r8, r9, move_forward
+	beq r8, r9,u_turn
 	#Adjust left vals
 	movi r9, 0b01000 
 	beq r8, r9, adjust_left

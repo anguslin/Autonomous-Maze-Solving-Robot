@@ -15,7 +15,7 @@ full_u_turn_movement:				#initiation
     #movi r17, %hi(500000000)
     #stwio r17, 12(r16)
 	
-	movi r17, 0x3000
+	movi r17, 0x4000
 	sthio r17, 8(r16)
 	srli r17, r17, 4
 	stwio r17, 12(r16)

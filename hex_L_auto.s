@@ -1,9 +1,9 @@
 .equ HEX0TO3, 0xFF200020
 .equ HEX4TO5, 0xFF200030
 
-.global hex_auto
+.global hex_L_auto
 
-hex_auto:
+hex_L_auto:
 	
 	addi sp, sp, -8
 	stw r8, 0(sp)

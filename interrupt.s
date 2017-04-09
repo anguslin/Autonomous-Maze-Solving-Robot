@@ -23,35 +23,47 @@ addi sp, sp, -16
 rdctl et, ctl4
 andi et, et, 0x2
 bne et, r0, pushButtonInterrupts
+br ps2_stuff
 
 pushButtonInterrupts:
 	
 	movia r16, PUSHBUTTONS
 	
 	ldwio r17, 12(r16)
-	andi r17, r17, 0b11
-	movi r18, 0b10 #Auto Mode 
-	beq r17, r18, CHANGE_AUTO
-	movi r18, 0b01 #Manual mode (Also Default)
+	andi r17, r17, 0b111
+	movi r18, 0b100 #Auto-right Mode 
+	beq r17, r18, CHANGE_AUTO_RIGHT
+	movi r18, 0b010 #Auto-left Mode 
+	beq r17, r18, CHANGE_AUTO_LEFT
+	movi r18, 0b001 #Manual mode (Also Default)
 	beq r17, r18, CHANGE_MANUAL
 	br CHECK_AUTO
 
-CHANGE_AUTO:
-	call hex_auto
+CHANGE_AUTO_RIGHT:
+	call hex_R_auto
+	call turn_LED_off
+	movi r23, 4
+	br CHECK_AUTO
+	
+CHANGE_AUTO_LEFT:
+	call hex_L_auto
+	call turn_LED_off
 	movi r23, 2
 	br CHECK_AUTO
 
 CHANGE_MANUAL:
 	call hex_manual
+	call turn_LED_off
 	movi r23, 1
 	br CHECK_AUTO
 
 CHECK_AUTO:
-	movi r17, 0b11
+	movi r17, 0b111 #acknowledge interrupt
 	stwio r17, 12(r16)
 	movi r16, 1
 	bne r23, r16, DONE #If auto mode, then leave
 
+ps2_stuff:
 	movia r16, PS_2
 	ldwio r17, 0(r16) #Load PS/2 Data
 	andi r17, r17, 0xFF #Mask the other values
@@ -72,23 +84,22 @@ STOP:
 	br DONE
 
 LEFT:
-	movi r4, 1 #Left parameter
-	call motor_function
+	 #Left parameter
+	call full_left_movement
 	br DONE
 
 RIGHT:
-	movi r4, 3 #Right parameter
-	call motor_function
+	 #Right parameter
+	call full_right_movement
 	br DONE
 
 FORWARD:
-	mov r4, r0 #Parameter for going straight
-	call motor_function
+	 #Parameter for going straight
+	call intersection_movement
 	br DONE
 	
 BACK:
-	movi r4, 2
-	call motor_function
+	call full_u_turn_movement
 	br DONE	
 
 DONE:

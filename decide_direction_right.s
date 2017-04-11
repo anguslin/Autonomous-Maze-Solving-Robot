@@ -3,7 +3,7 @@
 #Scenario 2) When going through the second maze using the shortest turn, when we meet intersections that has only one path, you would not read from the memory of paths to take
 #Scenario 3) Since we are using left hand rule, we need to make that we take straight turns prior to right ones, which would require moving forward to check
 
-.global decide_direction
+.global decide_direction_right
 
 #Motor Function parameters
 .equ GOSTRAIGHT, 0
@@ -14,7 +14,7 @@
 .equ TURNLEFT, 5 
 .equ STOP, 6
 
-decide_direction:
+decide_direction_right:
 	addi sp, sp, -4 #Store Return Address
 	stw ra, 0(sp)
 	
@@ -109,15 +109,15 @@ left_right_int:
 	#Left, right, and straight path intersection
 	left_right_straight:
 	#If at a left right, and straight intersection, take the left
-		call full_left_movement	
-		movi r2, TURNLEFT 
+		call full_right_movement	
+		movi r2, TURNRIGHT 
 		br direction_decided	
 
 	#Left and right path intersection
 	left_right_only:
 	#If at a left and right intersection, take the left
-		call full_left_movement	
-		movi r2, TURNLEFT 
+		call full_right_movement	
+		movi r2, TURNRIGHT 
 		br direction_decided
 
 	#Done maze	
@@ -141,9 +141,10 @@ left_int:
 
 	#Left and straight path intersection
 	left_straight:
-	#If at left and straight intersection, take the left
-		call full_left_movement	
-		movi r2, TURNLEFT 
+	#If at left and straight intersection, go straight
+		movi r4, GOSTRAIGHT 
+		call motor_function
+		movi r2, GOSTRAIGHT
 		br direction_decided
 
 	#Left path only
@@ -167,10 +168,9 @@ right_int:
 	#Right and straight path intersection
 	right_straight:
 	#If at right and straight intersection, go straight
-	movi r4, GOSTRAIGHT 
-	call motor_function
-	movi r2, GOSTRAIGHT
-	br direction_decided
+		call full_right_movement	
+		movi r2, TURNRIGHT 
+		br direction_decided
 
 	#Right path only
 	right_only:

@@ -15,7 +15,7 @@ full_left_movement:				#initiation
     #movi r17, %hi(5000000000)
     #stwio r17, 12(r16)
 	
-	movi r17, 0x3500
+	movi r17, 0x3000
 	sthio r17, 8(r16)
 	srli r17, r17, 4
 	stwio r17, 12(r16)
